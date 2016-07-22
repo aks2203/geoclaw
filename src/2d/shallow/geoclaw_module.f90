@@ -27,7 +27,7 @@ module geoclaw_module
     ! ========================================================================
     !  Physics
     ! ========================================================================
-    real(kind=8) :: grav, rho_air, ambient_pressure, earth_radius, sea_level
+    real(kind=8) :: grav, rho_air, ambient_pressure, earth_radius, sea_level(2)
     ! Water density can be an array to handle multiple layers
     real(kind=8), allocatable :: rho(:)
     integer :: coordinate_system
