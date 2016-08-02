@@ -24,7 +24,7 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
                        tolsp,q,aux,amrflags,DONTFLAG,DOFLAG)
 
     use amr_module, only: mxnest, t0
-    use geoclaw_module, only: dry_tolerance, sea_level
+    use geoclaw_module, only: sea_level
     use geoclaw_module, only: spherical_distance, coordinate_system
 
     use topo_module, only: tlowtopo,thitopo,xlowtopo,xhitopo,ylowtopo,yhitopo
@@ -40,13 +40,18 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
     use storm_module, only: wind_forcing, wind_index, wind_refine
 
     use regions_module, only: num_regions, regions
-    use refinement_module
+    use refinement_module, only: speed_tolerance, deep_depth, max_level_deep
 
+<<<<<<< HEAD
 <<<<<<< HEAD
     use multilayer_module, only: num_layers, rho
 =======
     use multilayer_module, only: rho, num_layers, eta_init
 >>>>>>> filval.f90, flag2refine.f90, geoclaw_module.f90 edited, odd errors dependent on rho.
+=======
+    use multilayer_module, only: rho, num_layers, eta_init, dry_tolerance, wave_tolerance
+
+>>>>>>> flag2refine.f90 now uses wave_tolerance from multilayer_module.
 
     implicit none
 
@@ -66,11 +71,7 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
     external allowflag
 
     ! Generic locals
-<<<<<<< HEAD
-    integer :: i,j,m, layer
-=======
     integer :: i, j, m, layer
->>>>>>> filval.f90, flag2refine.f90, geoclaw_module.f90 edited, odd errors dependent on rho.
     real(kind=8) :: x_c,y_c,x_low,y_low,x_hi,y_hi
     real(kind=8) :: speed, eta, ds
 
@@ -183,11 +184,11 @@ subroutine flag2refine2(mx,my,mbc,mbuff,meqn,maux,xlower,ylower,dx,dy,t,level, &
             ! check if there is a reason to flag this point:
             if (allowflag(x_c,y_c,t,level)) then
                 do layer = 1, num_layers
-                    if (q(3*layer-2,i,j) / rho(layer) > dry_tolerance) then
+                    if (q(3*layer-2,i,j) / rho(layer) > dry_tolerance(layer)) then
                         eta = q(3*layer-2,i,j) / rho(layer) + aux(1,i,j)
 
                         ! Check wave criteria
-                        if (abs(eta - eta_init(layer)) > wave_tolerance) then
+                        if (abs(eta - eta_init(layer)) > wave_tolerance(layer)) then
                             ! Check to see if we are near shore
                             if (q(3*layer-2,i,j) / rho(layer) < deep_depth) then
                                 amrflags(i,j) = DOFLAG
