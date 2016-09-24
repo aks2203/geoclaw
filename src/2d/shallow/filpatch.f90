@@ -43,6 +43,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     ! Flagging of set cells
     logical :: set
     integer :: i, i_coarse, j_coarse, i_fine, j_fine, n, k
+    integer :: i_f, j_f
     integer :: mx_coarse, my_coarse, mx_patch, my_patch
     integer :: unset_indices(4), coarse_indices(4)
     integer :: refinement_ratio_x, refinement_ratio_y
@@ -288,16 +289,27 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
                                 do i_layer = layer+1, num_layers
                                     bfine = bfine + valbig(3*i_layer-2,i_fine,j_fine)/rho(i_layer)
                                 enddo
-                                if (flaguse(i_fine,j_fine) == 0) then
+
+                                i_f = (i_coarse-1)*ratio_x + i_fine
+                                j_f = (j_coarse-1)*ratio_y + j_fine
+
+
+                                if (flaguse(i_f,j_f) == 0) then
+                                    fine_cell_count(i_coarse,j_coarse) = fine_cell_count(i_coarse,j_coarse) + 1
                                     valbig(3*layer-2,i_fine,j_fine) = (eta_coarse(2) + (xoff * slopex) + &
                                             (yoff * slopey) - bfine) * rho(layer)
-                                        valbig(3*layer-2,i_fine,j_fine) = max(0.d0, valbig(3*layer-2,i_fine,j_fine))
-!                                         finemass = finemass + valbig(3*layer-2,i_fine,j_fine)
-                                      if (valbig(3*layer-2,i_fine,j_fine) <= dry_tolerance(layer)) then
-!                                           fineflag(1) = .true.
-                                          valbig(3*layer-1,i_fine,j_fine) = 0.d0
-                                          valbig(3*layer,i_fine,j_fine) = 0.d0
-                                      endif
+                                    valbig(3*layer-2,i_fine,j_fine) = max(0.d0, valbig(3*layer-2,i_fine,j_fine))
+                                    if (valbig(3*layer-2,i_fine,j_fine) <= dry_tolerance(layer)) then
+                                        valbig(3*layer-1,i_fine,j_fine) = 0.d0
+                                        valbig(3*layer,i_fine,j_fine) = 0.d0
+                                    endif
+                                    fine_mass(i_coarse,j_coarse) = fine_mass(i_coarse,j_coarse) + valbig(3*layer-2,i_fine,j_fine) / rho(layer)
+
+                                    if (valbig(3*layer-2,i_fine,j_fine) / rho(layer) < dry_tolerance) then
+                                        fine_flag(1,i_coarse,j_coarse) = .true.
+                                        reloop = .true.
+                                    endif
+
                                 endif
                             enddo
                         enddo
