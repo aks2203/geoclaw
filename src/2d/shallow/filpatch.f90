@@ -235,8 +235,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
 
             ! Calculate surface elevation eta using dry limiting
             ! valcrse h values still need to be divided by rho
-            do j_coarse = 1, my_coarse
-                do i_coarse = 1, mx_coarse
+            do j_coarse = 2, my_coarse-1
+                do i_coarse = 2, mx_coarse-1
                     b = ( (/ auxcrse(iauxc(i_coarse,j_coarse)), auxcrse(iauxc(i_coarse+1,j_coarse)), &
                             auxcrse(iauxc(i_coarse-1,j_coarse)), auxcrse(iauxc(i_coarse,j_coarse+1)), &
                             auxcrse(iauxc(i_coarse,j_coarse-1)) /) )
@@ -290,8 +290,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
                                     bfine = bfine + valbig(3*i_layer-2,i_fine,j_fine)/rho(i_layer)
                                 enddo
 
-                                i_f = (i_coarse-1)*ratio_x + i_fine
-                                j_f = (j_coarse-1)*ratio_y + j_fine
+                                i_f = (i_coarse-1)*ratio_x + ico-1
+                                j_f = (j_coarse-1)*ratio_y + jco-1
 
 
                                 if (flaguse(i_f,j_f) == 0) then
