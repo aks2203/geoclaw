@@ -218,113 +218,107 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
         endif
 
         !********* Begin Interpolations **************!
-            ratio_y = refinement_ratio_y
-            ratio_x = refinement_ratio_x
+        ratio_y = refinement_ratio_y
+        ratio_x = refinement_ratio_x
 !         do layer = num_layers, 1, -1 
-            ! the number of values in a cell (for now 3: eta, u, v) should be calculated from num_layers and nvar
+        ! the number of values in a cell (for now 3: eta, u, v) should be calculated from num_layers and nvar
 
-            ! loop through coarse cells determining intepolation slopes
-            ! these will be saved for fine grid loop
-            ! prevents finding the same slope possibly lratiox*lratioy times
-            ! all fine gid depths will be found before any momentum
-            reloop = .false.
-            fine_cell_count = 0
-            fine_flag = .false.
-            fine_mass = 0.d0
-            slope = 0.d0
+        ! loop through coarse cells determining intepolation slopes
+        ! these will be saved for fine grid loop
+        ! prevents finding the same slope possibly lratiox*lratioy times
+        ! all fine gid depths will be found before any momentum
+        reloop = .false.
+        fine_cell_count = 0
+        fine_flag = .false.
+        fine_mass = 0.d0
+        slope = 0.d0
 
-            ! Calculate surface elevation eta using dry limiting
-            ! valcrse h values still need to be divided by rho
-            do j_coarse = 2, my_coarse-1
-                do i_coarse = 2, mx_coarse-1
-                    b = ( (/ auxcrse(iauxc(i_coarse,j_coarse)), auxcrse(iauxc(i_coarse+1,j_coarse)), &
-                            auxcrse(iauxc(i_coarse-1,j_coarse)), auxcrse(iauxc(i_coarse,j_coarse+1)), &
-                            auxcrse(iauxc(i_coarse,j_coarse-1)) /) )
+        ! Calculate surface elevation eta using dry limiting
+        ! valcrse h values still need to be divided by rho
+        do j_coarse = 2, my_coarse-1
+            do i_coarse = 2, mx_coarse-1
+                b = ( (/ auxcrse(iauxc(i_coarse,j_coarse)), auxcrse(iauxc(i_coarse+1,j_coarse)), &
+                        auxcrse(iauxc(i_coarse-1,j_coarse)), auxcrse(iauxc(i_coarse,j_coarse+1)), &
+                        auxcrse(iauxc(i_coarse,j_coarse-1)) /) )
 
-                    do layer = num_layers, 1, -1
-                        h = valcrse(ivalc(3*layer-2,i_coarse,j_coarse)) / rho(layer)
-                        if (h < dry_tolerance(layer)) then
-                            eta_coarse(2) = eta_init(layer)
+                do layer = num_layers, 1, -1
+                    h = valcrse(ivalc(3*layer-2,i_coarse,j_coarse)) / rho(layer)
+                    if (h < dry_tolerance(layer)) then
+                        eta_coarse(2) = eta_init(layer)
+                    else
+                        eta_coarse(2) = h + b(1)
+                    endif
+
+                    do ii = -1, 1, 2
+                        h_i = valcrse(ivalc(3*layer-2,i_coarse+ii,j_coarse)) / rho(layer)
+                        if (h_i < dry_tolerance(layer)) then
+                            eta_coarse(2+ii) = eta_init(layer)
                         else
-                            eta_coarse(2) = h + b(1)
+                            eta_coarse(2+ii) = h_i + b((5+ii)/2)
                         endif
-
-                        do ii = -1, 1, 2
-                            h_i = valcrse(ivalc(3*layer-2,i_coarse+ii,j_coarse)) / rho(layer)
-                            if (h_i < dry_tolerance(layer)) then
-                                eta_coarse(2+ii) = eta_init(layer)
-                            else
-                                eta_coarse(2+ii) = h_i + b((5+ii)/2)
-                            endif
-                            b((5+ii)/2) = h_i + b((5+ii)/2)
-                        enddo
-
-                        s1p = eta_coarse(3) - eta_coarse(2)
-                        s1m = eta_coarse(2) - eta_coarse(1)
-                        slopex = min(abs(s1p), abs(s1m)) * sign(1.d0,eta_coarse(3) - eta_coarse(1))
-                        if (s1m*s1p <= 0.d0) slopex=0.d0
-
-                        do jj = -1, 1, 2
-                            h_j = valcrse(ivalc(3*layer-2, i_coarse, j_coarse +jj)) / rho(layer)
-                            if (h_j < dry_tolerance(layer)) then
-                                eta_coarse(2+jj) = eta_init(layer)
-                            else
-                                eta_coarse(2+jj) = h_j + b((9+jj)/2)
-                            endif
-                            b((9+jj)/2) = h_j + b((9+jj)/2)
-                        enddo
-
-                        s1p = eta_coarse(3) - eta_coarse(2)
-                        s1m = eta_coarse(2) - eta_coarse(1)
-                        slopey = min(abs(s1p), abs(s1m)) * sign(1.d0,eta_coarse(3)-eta_coarse(1))
-                        if (s1m*s1p <= 0.d0) slopey=0.d0
-
-                        do jco = 1, ratio_y
-                            do ico = 1, ratio_x
-                                yoff = (real(jco,kind=8) - 0.5d0) / ratio_y - 0.5d0
-                                xoff = (real(ico,kind=8) - 0.5d0) / ratio_x - 0.5d0
-
-                                j_fine = (j_coarse-2) * ratio_y + jco
-                                i_fine = (i_coarse-2) * ratio_x + ico
-                                
-                                j_f = j_fine+ncolst-1
-                                i_f = i_fine+nrowst-1
-                                
-                                bfine = aux(1, i_f, j_f)
-                                do i_layer = layer+1, num_layers
-                                    bfine = bfine + valbig(3*i_layer-2,i_f, j_f)/rho(i_layer)
-                                enddo
-
-                                if (flaguse(i_fine, j_fine) == 0) then
-                                    fine_cell_count(i_coarse, j_coarse) = fine_cell_count(i_coarse, j_coarse) + 1
-                                    valbig(3*layer-2, i_f, j_f) = (eta_coarse(2) + (xoff * slopex) + &
-                                                                    (yoff * slopey) - bfine) * rho(layer)
-                                    valbig(3*layer-2, i_f, j_f) = max(0.d0, valbig(3*layer-2, i_f, j_f))
-                                    if (valbig(3*layer-2, i_f, j_f) < dry_tolerance(layer)) then
-                                        valbig(3*layer-1, i_f, j_f) = 0.d0
-                                        valbig(3*layer, i_f, j_f) = 0.d0
-                                    endif
-                                    fine_mass(i_coarse,j_coarse) = fine_mass(i_coarse,j_coarse) + valbig(3*layer-2, i_f, j_f)
-
-                                    if (valbig(3*layer-2, i_f, j_f) < dry_tolerance(layer)) then
-                                        fine_flag(1,i_coarse,j_coarse) = .true.
-                                        reloop = .true.
-                                    endif
-
-                                endif
-                            enddo
-                        enddo
-                        b(1) = b(1) + h
+                        b((5+ii)/2) = h_i + b((5+ii)/2)
                     enddo
-                enddo
-            enddo
 
-        do layer  = 1, num_layers
-            ! Momentum Interpolation
-            do n = 3*layer - 1, 3*layer
-              do j_coarse = 2, my_coarse - 1
-                do i_coarse = 2, mx_coarse - 1
+                    s1p = eta_coarse(3) - eta_coarse(2)
+                    s1m = eta_coarse(2) - eta_coarse(1)
+                    slopex = min(abs(s1p), abs(s1m)) * sign(1.d0,eta_coarse(3) - eta_coarse(1))
+                    if (s1m*s1p <= 0.d0) slopex=0.d0
 
+                    do jj = -1, 1, 2
+                        h_j = valcrse(ivalc(3*layer-2, i_coarse, j_coarse +jj)) / rho(layer)
+                        if (h_j < dry_tolerance(layer)) then
+                            eta_coarse(2+jj) = eta_init(layer)
+                        else
+                            eta_coarse(2+jj) = h_j + b((9+jj)/2)
+                        endif
+                        b((9+jj)/2) = h_j + b((9+jj)/2)
+                    enddo
+
+                    s1p = eta_coarse(3) - eta_coarse(2)
+                    s1m = eta_coarse(2) - eta_coarse(1)
+                    slopey = min(abs(s1p), abs(s1m)) * sign(1.d0,eta_coarse(3)-eta_coarse(1))
+                    if (s1m*s1p <= 0.d0) slopey=0.d0
+
+                    do jco = 1, ratio_y
+                        do ico = 1, ratio_x
+                            yoff = (real(jco,kind=8) - 0.5d0) / ratio_y - 0.5d0
+                            xoff = (real(ico,kind=8) - 0.5d0) / ratio_x - 0.5d0
+
+                            j_fine = (j_coarse-2) * ratio_y + jco
+                            i_fine = (i_coarse-2) * ratio_x + ico
+                            
+                            j_f = j_fine+ncolst-1
+                            i_f = i_fine+nrowst-1
+                            
+                            bfine = aux(1, i_f, j_f)
+                            do i_layer = layer+1, num_layers
+                                bfine = bfine + valbig(3*i_layer-2,i_f, j_f)/rho(i_layer)
+                            enddo
+
+                            if (flaguse(i_fine, j_fine) == 0) then
+                                fine_cell_count(i_coarse, j_coarse) = fine_cell_count(i_coarse, j_coarse) + 1
+                                valbig(3*layer-2, i_f, j_f) = (eta_coarse(2) + (xoff * slopex) + &
+                                                                (yoff * slopey) - bfine) * rho(layer)
+                                valbig(3*layer-2, i_f, j_f) = max(0.d0, valbig(3*layer-2, i_f, j_f))
+                                if (valbig(3*layer-2, i_f, j_f) < dry_tolerance(layer)) then
+                                    valbig(3*layer-1, i_f, j_f) = 0.d0
+                                    valbig(3*layer, i_f, j_f) = 0.d0
+                                endif
+                                fine_mass(i_coarse,j_coarse) = fine_mass(i_coarse,j_coarse) + valbig(3*layer-2, i_f, j_f)
+
+                                if (valbig(3*layer-2, i_f, j_f) < dry_tolerance(layer)) then
+                                    fine_flag(1,i_coarse,j_coarse) = .true.
+                                    reloop = .true.
+                                endif
+
+                            endif
+                        enddo
+                    enddo
+                    b(1) = b(1) + h
+
+
+                ! Momentum Interpolation
+                    do n = 3*layer - 1, 3*layer
                         ! Determine slopes for interpolation
                         down_slope = (valcrse(ivalc(n,i_coarse,j_coarse)) - valcrse(ivalc(n,i_coarse-1,j_coarse)))
                         up_slope   = (valcrse(ivalc(n,i_coarse+1,j_coarse)) - valcrse(ivalc(n,i_coarse,j_coarse)))
@@ -376,83 +370,79 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
 
                             endif
                         enddo
-                    enddo
-                enddo
 
-                ! Determine momentum in fine cells
-                do j_fine = 1, my_patch
-                    j_coarse     = floor((j_fine + jlo - 1) / ratio_y) - jplo + 1
-                    ycent_coarse = ylow_coarse + (j_coarse-.5d0)*dy_coarse
-                    ycent_fine   =  ylower + (j_fine-1+jlo + .5d0)*dy_fine
-                    eta2         = (ycent_fine-ycent_coarse)/dy_coarse
 
-                    do i_fine = 1, mx_patch
-                        i_coarse     = floor((i_fine+ilo-1) / ratio_x) - iplo + 1
-                        xcent_coarse = xlow_coarse + (i_coarse-.5d0)*dx_coarse
-                        xcent_fine   =  xlower + (i_fine-1+ilo + .5d0)*dx_fine
-                        eta1         = (xcent_fine-xcent_coarse)/dx_coarse
+                    ! Determine momentum in fine cells
+                        do j_fine = 1, my_patch
+                            ycent_coarse = ylow_coarse + (j_coarse-.5d0)*dy_coarse
+                            ycent_fine   =  ylower + (j_fine-1+jlo + .5d0)*dy_fine
+                            eta2         = (ycent_fine-ycent_coarse)/dy_coarse
 
-                        if (flaguse(i_fine,j_fine) == 0) then
-                            ! Cell not already set
+                            do i_fine = 1, mx_patch
+                                xcent_coarse = xlow_coarse + (i_coarse-.5d0)*dx_coarse
+                                xcent_fine   =  xlower + (i_fine-1+ilo + .5d0)*dx_fine
+                                eta1         = (xcent_fine-xcent_coarse)/dx_coarse
 
-                            if (.not.(fine_flag(1,i_coarse,j_coarse))) then
-                                ! This cell has no coarse cells that are dry
-                                hv_fine = valcrse(ivalc(n,i_coarse,j_coarse))         &
-                                                + eta1 * slope(1,i_coarse,j_coarse)   &
-                                                + eta2 * slope(2,i_coarse,j_coarse)
-                                v_fine = hv_fine  / valbig(3*layer-2,i_fine+nrowst-1, j_fine+ncolst-1)
-                                if (v_fine<vel_min(i_coarse,j_coarse) .or.  v_fine>vel_max(i_coarse,j_coarse)) then
-                                    fine_flag(n,i_coarse,j_coarse) = .true.
-                                    reloop = .true.
-                                else
-                                    valbig(n,i_fine+nrowst-1,j_fine+ncolst-1) = hv_fine
-                                endif
-                            endif
-                        endif
-                    enddo
-                enddo
+                                if (flaguse(i_fine,j_fine) == 0) then
+                                    ! Cell not already set
 
-                ! Reset momentum to conserve momentum in the cases where we may have
-                ! gained momentum or if velocity bounds were violated
-                if (reloop) then
-                  
-                    do j_fine  = 1, my_patch
-                      j_coarse     = floor((j_fine + jlo - 1) / ratio_y) - jplo + 1
-                      ycent_coarse = ylow_coarse + (j_coarse-.5d0)*dy_coarse
-                      ycent_fine   =  ylower + (j_fine-1+jlo + .5d0)*dy_fine
-                      eta2         = (ycent_fine-ycent_coarse)/dy_coarse
-     
-                        do i_fine = 1, mx_patch
-                           i_coarse     = floor((i_fine+ilo-1) / ratio_x) - iplo + 1
-                           xcent_coarse = xlow_coarse + (i_coarse-.5d0)*dx_coarse
-                           xcent_fine   =  xlower + (i_fine-1+ilo + .5d0)*dx_fine
-                           eta1         = (xcent_fine-xcent_coarse)/dx_coarse
-
-                            if (flaguse(i_fine,j_fine) == 0) then
-                                if (fine_flag(1,i_coarse,j_coarse) .or. fine_flag(n,i_coarse,j_coarse)) then
-                                    if (fine_mass(i_coarse,j_coarse) > dry_tolerance(layer)) then
-                                        h_coarse = valcrse(ivalc(1,i_coarse,j_coarse))
-                                        h_count = real(fine_cell_count(i_coarse,j_coarse),kind=8)
-                                        h_fine_average = fine_mass(i_coarse,j_coarse) / h_count
-                                        divide_mass = max(h_coarse, h_fine_average)
-                                        h_fine = valbig(3*layer-2, i_fine + nrowst - 1, j_fine + ncolst - 1)
-                                        v_new = valcrse(ivalc(n,i_coarse,j_coarse)) / (divide_mass)
-
-                                        valbig(n,i_fine+nrowst-1,j_fine+ncolst-1) = &
-                                            v_new * valbig(3*layer-2,i_fine+nrowst-1,j_fine+ncolst-1)
-                                    else
-                                        valbig(n,i_fine+nrowst-1,j_fine+ncolst-1) = 0.d0
+                                    if (.not.(fine_flag(1,i_coarse,j_coarse))) then
+                                        ! This cell has no coarse cells that are dry
+                                        hv_fine = valcrse(ivalc(n,i_coarse,j_coarse))         &
+                                                        + eta1 * slope(1,i_coarse,j_coarse)   &
+                                                        + eta2 * slope(2,i_coarse,j_coarse)
+                                        v_fine = hv_fine  / valbig(3*layer-2,i_fine+nrowst-1, j_fine+ncolst-1)
+                                        if (v_fine<vel_min(i_coarse,j_coarse) .or.  v_fine>vel_max(i_coarse,j_coarse)) then
+                                            fine_flag(n,i_coarse,j_coarse) = .true.
+                                            reloop = .true.
+                                        else
+                                            valbig(n,i_fine+nrowst-1,j_fine+ncolst-1) = hv_fine
+                                        endif
                                     endif
                                 endif
-                            endif
+                            enddo
                         enddo
-                    enddo
-                endif
-            enddo
-        enddo
-        ! **************** End Interpolation *******************
 
-    endif   ! end if patch not set
+                    ! Reset momentum to conserve momentum in the cases where we may have
+                    ! gained momentum or if velocity bounds were violated
+                        if (reloop) then
+                  
+                            do j_fine  = 1, my_patch
+                                ycent_coarse = ylow_coarse + (j_coarse-.5d0)*dy_coarse
+                                ycent_fine   =  ylower + (j_fine-1+jlo + .5d0)*dy_fine
+                                eta2         = (ycent_fine-ycent_coarse)/dy_coarse
+             
+                                do i_fine = 1, mx_patch
+                                    xcent_coarse = xlow_coarse + (i_coarse-.5d0)*dx_coarse
+                                    xcent_fine   =  xlower + (i_fine-1+ilo + .5d0)*dx_fine
+                                    eta1         = (xcent_fine-xcent_coarse)/dx_coarse
+
+                                    if (flaguse(i_fine,j_fine) == 0) then
+                                        if (fine_flag(1,i_coarse,j_coarse) .or. fine_flag(n,i_coarse,j_coarse)) then
+                                            if (fine_mass(i_coarse,j_coarse) > dry_tolerance(layer)) then
+                                                h_coarse = valcrse(ivalc(1,i_coarse,j_coarse))
+                                                h_count = real(fine_cell_count(i_coarse,j_coarse),kind=8)
+                                                h_fine_average = fine_mass(i_coarse,j_coarse) / h_count
+                                                divide_mass = max(h_coarse, h_fine_average)
+                                                h_fine = valbig(3*layer-2, i_fine + nrowst - 1, j_fine + ncolst - 1)
+                                                v_new = valcrse(ivalc(n,i_coarse,j_coarse)) / (divide_mass)
+
+                                                valbig(n,i_fine+nrowst-1,j_fine+ncolst-1) = &
+                                                    v_new * valbig(3*layer-2,i_fine+nrowst-1,j_fine+ncolst-1)
+                                            else
+                                                valbig(n,i_fine+nrowst-1,j_fine+ncolst-1) = 0.d0
+                                            endif
+                                        endif
+                                    endif
+                                enddo
+                            enddo
+                        endif
+                    enddo ! Momentum component loop
+                enddo ! Layer loop
+            enddo ! Coarse i loop
+        enddo ! Coarse j loop
+        ! **************** End Interpolation *******************
+    endif ! end if patch not set
 
     ! set bcs, whether or not recursive calls needed. set any part of patch that stuck out
     xhi_fine = xlower + (ihi + 1) * dx_fine
