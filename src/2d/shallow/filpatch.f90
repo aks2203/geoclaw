@@ -46,7 +46,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     integer :: i_f, j_f
     integer :: mx_coarse, my_coarse, mx_patch, my_patch
     integer :: unset_indices(4), coarse_indices(4)
-    integer :: refinement_ratio_x, refinement_ratio_y
+    integer :: refinement_ratio_x, refinement_ratio_y, ratio_x,ratio_y
     integer :: layer, i_layer, ico, jco, ii, jj
     real(kind=8) :: dx_fine, dy_fine, dx_coarse, dy_coarse
     real(kind=8) :: xlow_coarse,ylow_coarse, xlow_fine, ylow_fine, xhi_fine,yhi_fine   
@@ -54,7 +54,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     real(kind=8) :: h_i, h_j, s1m, s1p, slopex, slopey, xoff, yoff
     real(kind=8) :: hv_fine, v_fine, v_new, divide_mass
     real(kind=8) :: h_fine_average, h_fine, h_count, h_coarse
-    real(kind=8)::  xcent_fine,xcent_coarse,ycent_fine,ycent_coarse,ratio_x,ratio_y
+    real(kind=8)::  xcent_fine,xcent_coarse,ycent_fine,ycent_coarse
     integer(kind=1) :: flaguse(ihi-ilo+1, jhi-jlo+1)
 
     real(kind=8) :: eta1old, eta2old
