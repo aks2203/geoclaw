@@ -237,9 +237,9 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
         ! valcrse h values still need to be divided by rho
         do j_coarse = 2, my_coarse-1
             do i_coarse = 2, mx_coarse-1
-                b = ( (/ auxcrse(iauxc(i_coarse,j_coarse)), auxcrse(iauxc(i_coarse+1,j_coarse)), &
-                        auxcrse(iauxc(i_coarse-1,j_coarse)), auxcrse(iauxc(i_coarse,j_coarse+1)), &
-                        auxcrse(iauxc(i_coarse,j_coarse-1)) /) )
+                b = ( (/ auxcrse(iauxc(i_coarse,j_coarse)), auxcrse(iauxc(i_coarse-1,j_coarse)), &
+                        auxcrse(iauxc(i_coarse+1,j_coarse)), auxcrse(iauxc(i_coarse,j_coarse-1)), &
+                        auxcrse(iauxc(i_coarse,j_coarse+1)) /) )
 
                 do layer = num_layers, 1, -1
                     h = valcrse(ivalc(3*layer-2,i_coarse,j_coarse)) / rho(layer)
@@ -248,6 +248,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
                     else
                         eta_coarse(2) = h + b(1)
                     endif
+                    b(1) = b(1) + h
 
                     do ii = -1, 1, 2
                         h_i = valcrse(ivalc(3*layer-2,i_coarse+ii,j_coarse)) / rho(layer)
@@ -265,7 +266,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
                     if (s1m*s1p <= 0.d0) slopex=0.d0
 
                     do jj = -1, 1, 2
-                        h_j = valcrse(ivalc(3*layer-2, i_coarse, j_coarse +jj)) / rho(layer)
+                        h_j = valcrse(ivalc(3*layer-2, i_coarse, j_coarse+jj)) / rho(layer)
                         if (h_j < dry_tolerance(layer)) then
                             eta_coarse(2+jj) = eta_init(layer)
                         else
@@ -276,7 +277,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
 
                     s1p = eta_coarse(3) - eta_coarse(2)
                     s1m = eta_coarse(2) - eta_coarse(1)
-                    slopey = min(abs(s1p), abs(s1m)) * sign(1.d0,eta_coarse(3)-eta_coarse(1))
+                    slopey = min(abs(s1p), abs(s1m)) * sign(1.d0,eta_coarse(3) - eta_coarse(1))
                     if (s1m*s1p <= 0.d0) slopey=0.d0
 
                     do jco = 1, ratio_y
@@ -311,14 +312,27 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
                                     reloop = .true.
                                 endif
 
+                                if (valbig(3*layer-2,i_f, j_f) < dry_tolerance(1)) then
+                                    if (bfine < -0.201) then
+!                                     if (xlower == -2.0 .and. ylower == -2.0) then
+                                        print *, 'b', b
+                                        print *, 'bfine', bfine
+                                        print *, 'valbig', valbig(3*layer-2, i_f, j_f)
+                                        print *, 'layer', layer
+                                    
+                                        print *, xlower, ylower
+!                                     endif
+                                    endif
+                                endif
+                               
+
                             endif
                         enddo
                     enddo
-                    b(1) = b(1) + h
-
 
                 ! Momentum Interpolation
                     do n = 3*layer - 1, 3*layer
+                        slope = 0
                         ! Determine slopes for interpolation
                         down_slope = (valcrse(ivalc(n,i_coarse,j_coarse)) - valcrse(ivalc(n,i_coarse-1,j_coarse)))
                         up_slope   = (valcrse(ivalc(n,i_coarse+1,j_coarse)) - valcrse(ivalc(n,i_coarse,j_coarse)))
