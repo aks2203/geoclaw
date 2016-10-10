@@ -51,7 +51,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     real(kind=8) :: dx_fine, dy_fine, dx_coarse, dy_coarse
     real(kind=8) :: xlow_coarse,ylow_coarse, xlow_fine, ylow_fine, xhi_fine,yhi_fine   
     real(kind=8) :: h, b(5), bfine, eta_fine, eta1, eta2, up_slope, down_slope
-    real(kind=8) :: h_i, h_j, s1m, s1p, slopex, slopey, xoff, yoff
+    real(kind=8) :: h_i, h_j, h_f, s1m, s1p, slopex, slopey, xoff, yoff
     real(kind=8) :: hv_fine, v_fine, v_new, divide_mass
     real(kind=8) :: h_fine_average, h_fine, h_count, h_coarse
     real(kind=8)::  xcent_fine,xcent_coarse,ycent_fine,ycent_coarse
@@ -121,7 +121,6 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     ! some values from coarser levels, possibly calling this routine
     ! recursively.
     if (.not.set) then
-
         ! Error check
         if (level == 1) then
             write(outunit,*)" error in filrecur - level 1 not set"
@@ -282,8 +281,8 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
 
                     do jco = 1, ratio_y
                         do ico = 1, ratio_x
-                            yoff = (real(jco,kind=8) - 0.5d0) / ratio_y - 0.5d0
-                            xoff = (real(ico,kind=8) - 0.5d0) / ratio_x - 0.5d0
+                            yoff = (real(jco,kind=8) - 0.5d0) / real(ratio_y,kind=8) - 0.5d0
+                            xoff = (real(ico,kind=8) - 0.5d0) / real(ratio_x,kind=8) - 0.5d0
 
                             j_fine = (j_coarse-2) * ratio_y + jco
                             i_fine = (i_coarse-2) * ratio_x + ico
@@ -298,10 +297,9 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
 
                             if (flaguse(i_fine, j_fine) == 0) then
                                 fine_cell_count(i_coarse, j_coarse) = fine_cell_count(i_coarse, j_coarse) + 1
-                                valbig(3*layer-2, i_f, j_f) = (eta_coarse(2) + (xoff * slopex) + &
-                                                                (yoff * slopey) - bfine) * rho(layer)
-                                valbig(3*layer-2, i_f, j_f) = max(0.d0, valbig(3*layer-2, i_f, j_f))
-                                if (valbig(3*layer-2, i_f, j_f) < dry_tolerance(layer)) then
+                                h_f = eta_coarse(2) + (xoff * slopex) + (yoff * slopey) - bfine
+                                valbig(3*layer-2, i_f, j_f) = max(0.d0, h_f*rho(layer))
+                                if (h_f < dry_tolerance(layer)) then
                                     valbig(3*layer-1, i_f, j_f) = 0.d0
                                     valbig(3*layer, i_f, j_f) = 0.d0
                                 endif
@@ -312,18 +310,18 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
                                     reloop = .true.
                                 endif
 
-                                if (valbig(3*layer-2,i_f, j_f) < dry_tolerance(1)) then
-                                    if (bfine < -0.201) then
-!                                     if (xlower == -2.0 .and. ylower == -2.0) then
-                                        print *, 'b', b
-                                        print *, 'bfine', bfine
-                                        print *, 'valbig', valbig(3*layer-2, i_f, j_f)
-                                        print *, 'layer', layer
+!                                 if (valbig(3*layer-2,i_f, j_f) < dry_tolerance(layer)) then
+!                                     if (bfine < -0.201) then
+! !                                     if (xlower == -2.0 .and. ylower == -2.0) then
+!                                         print *, 'b', b
+!                                         print *, 'bfine', bfine
+!                                         print *, 'valbig', valbig(3*layer-2, i_f, j_f)
+!                                         print *, 'layer', layer
                                     
-                                        print *, xlower, ylower
+!                                         print *, xlower, ylower
+! !                                     endif
 !                                     endif
-                                    endif
-                                endif
+!                                 endif
                                
 
                             endif
