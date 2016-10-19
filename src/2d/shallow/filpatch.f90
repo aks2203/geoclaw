@@ -17,7 +17,7 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     use amr_module, only: nghost, xlower, ylower, xupper, yupper, outunit
     use amr_module, only: xperdom, yperdom, spheredom, hxposs, hyposs
     use amr_module, only: intratx, intraty, iregsz, jregsz
-    use amr_module, only: timeSetaux, NEEDS_TO_BE_SET
+    use amr_module, only: NEEDS_TO_BE_SET
 
     use multilayer_module, only: num_layers, rho, eta_init, dry_tolerance
 
@@ -37,7 +37,6 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
     real(kind=8), intent(in out) :: aux(naux,mx,my)
 
     ! Local storage
-    integer  :: clock_start, clock_finish, clock_rate, clock_dif
     integer  :: iplo, iphi, jplo, jphi
 
     ! Flagging of set cells
@@ -182,7 +181,6 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
         
         if (naux > 0) then
             nghost_patch = 0
-            call system_clock(clock_start,clock_rate)
   
             ! update topography if needed
             !if ((num_dtopo>0).and.(topo_finalized.eqv..false.)) then
@@ -199,10 +197,6 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
             call setaux(nghost_patch, mx_coarse, my_coarse,       &
                         xlow_coarse, ylow_coarse,                 &
                         dx_coarse,dy_coarse,naux,auxcrse)
-            call system_clock(clock_finish,clock_rate)
-            clock_dif = clock_finish - clock_start
-!$OMP ATOMIC            
-            timeSetaux = timeSetaux + clock_dif
         endif
 
         ! Fill in the edges of the coarse grid
