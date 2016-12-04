@@ -197,6 +197,11 @@ recursive subroutine filrecur(level,nvar,valbig,aux,naux,t,mx,my, &
             call setaux(nghost_patch, mx_coarse, my_coarse,       &
                         xlow_coarse, ylow_coarse,                 &
                         dx_coarse,dy_coarse,naux,auxcrse)
+
+            call system_clock(clock_finish,clock_rate)
+            clock_dif = clock_finish - clock_start
+!$OMP ATOMIC            
+
         endif
 
         ! Fill in the edges of the coarse grid
