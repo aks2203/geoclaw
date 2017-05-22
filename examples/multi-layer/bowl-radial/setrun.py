@@ -110,12 +110,12 @@ def setrun(claw_pkg='geoclaw'):
     # Note that the time integration stops after the final output time.
     # The solution at initial time t0 is always written in addition.
 
-    clawdata.output_style = 1
+    clawdata.output_style = 3
 
     if clawdata.output_style==1:
         # Output nout frames at equally spaced times up to tfinal:
         clawdata.num_output_times = 10
-        clawdata.tfinal = 8.0
+        clawdata.tfinal = 4.0
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
@@ -124,8 +124,8 @@ def setrun(claw_pkg='geoclaw'):
 
     elif clawdata.output_style == 3:
         # Output every iout timesteps with a total of ntot time steps:
-        clawdata.output_step_interval = 4
-        clawdata.total_steps = 50
+        clawdata.output_step_interval = 1
+        clawdata.total_steps = 200
         clawdata.output_t0 = True
         
 
@@ -369,7 +369,7 @@ def setgeo(rundata):
     geo_data.coriolis_forcing = False
 
     # == Algorithm and Initial Conditions ==
-    geo_data.sea_level = [0.0, -20.0]
+    geo_data.sea_level = [0.0, -10.0]
     geo_data.dry_tolerance = 1.e-3
     geo_data.friction_forcing = True
     geo_data.manning_coefficient = 0.025
@@ -417,7 +417,7 @@ def set_multilayer(rundata):
     # Physics parameters
     data.num_layers = 2
     data.rho = [0.9, 1.0]
-    data.eta = [0.0, -20.0]
+    data.eta = [0.0, -10.0]
     
     # Algorithm parameters
     data.eigen_method = 2
