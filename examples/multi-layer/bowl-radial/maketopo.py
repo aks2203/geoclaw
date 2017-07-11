@@ -30,10 +30,10 @@ def makeqinit():
     """
     nxpoints = 101
     nypoints = 101
-    xlower = -50.e0
-    xupper = 50.e0
-    yupper = 50.e0
-    ylower = -50.e0
+    xlower = -100.e0
+    xupper = 100.e0
+    yupper = 100.e0
+    ylower = -100.e0
     outfile= "hump.xyz"     
 
     topography = Topography(topo_func=qinit)
@@ -47,16 +47,11 @@ def topo(x,y):
     """
     # value of z at origin:  Try zmin = 80 for shoreline or 250 for no shore
     zmin = 80.
-    ze = 2.e-2*(x**2 + y**2) - zmin
-    # z = where(abs(ze + 20.0) > 6, ze, -10.0)
+    z = 1.e-2*(x**2 + y**2) - zmin
 
-    # """
-    # square
-    # """
-    # z = 50
-    # z = where((abs(y)>70) | (abs(x)>70), 50, -zmin)
-
-    return ze
+    # r = x**2 + y**2
+    # z = where(r<80**2, -zmin, zmin)
+    return z
 
 
 def qinit(x,y):
@@ -64,8 +59,8 @@ def qinit(x,y):
     Gaussian hump:
     """
     from numpy import where
-    ze = -((x+0e0)**2 + (y+0e0)**2)/10.
-    z = where(ze>-10., 10.e0*exp(ze), 0.)
+    ze = -((x+0e0)**2 + (y+0e0)**2)/100
+    z = where(ze>-10, 15.0*exp(ze), 0.)
     return z
 
 if __name__=='__main__':

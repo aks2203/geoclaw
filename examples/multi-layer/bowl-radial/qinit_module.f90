@@ -45,9 +45,8 @@ contains
         character(len=*), optional, intent(in) :: fname
         
         ! File handling
-        character(len=150) :: qinit_fname
         integer, parameter :: unit = 7
-        character(len=150) :: x
+        character(len=150) :: qinit_fname
         
         if (.not.module_setup) then
 
@@ -122,107 +121,37 @@ contains
         
         ! Topography integral function
         real(kind=8) :: topointegral
+        do i = 1-mbc, mx+mbc
+            x = xlower + (i - 0.5d0)*dx
+            xim = x - 0.5d0 * dx
+            xip = x + 0.5d0 * dx
+            do j = 1-mbc, my+mbc
+                y = ylower + (j - 0.5d0) * dy
+                yjm = y - 0.5d0 * dy
+                yjp = y + 0.5d0 * dy
 
-        if (qinit_type == 4) then
-            do i = 1-mbc, mx+mbc
-                x = xlower + (i - 0.5d0)*dx
-                xim = x - 0.5d0 * dx
-                xip = x + 0.5d0 * dx
-                do j = 1-mbc, my+mbc
-                    y = ylower + (j - 0.5d0) * dy
-                    yjm = y - 0.5d0 * dy
-                    yjp = y + 0.5d0 * dy
+                ! Check to see if we are in the qinit region at this grid point
+                if ((xip > x_low_qinit).and.(xim < x_hi_qinit).and.  &
+                    (yjp > y_low_qinit).and.(yjm < y_hi_qinit)) then
+                    xipc = min(xip, x_hi_qinit)
+                    ximc = max(xim, x_low_qinit)
+                    xc = 0.5d0 * (xipc + ximc)
 
-                    ! Check to see if we are in the qinit region at this grid point
-                    if ((xip > x_low_qinit).and.(xim < x_hi_qinit).and.  &
-                        (yjp > y_low_qinit).and.(yjm < y_hi_qinit)) then
+                    yjpc=min(yjp,y_hi_qinit)
+                    yjmc=max(yjm,y_low_qinit)
+                    yc=0.5d0*(yjmc+yjpc)
 
-                        xipc = min(xip, x_hi_qinit)
-                        ximc = max(xim, x_low_qinit)
+                    dq = topointegral(ximc,xipc,yjmc,yjpc,x_low_qinit, &
+                                      y_low_qinit,dx_qinit,dy_qinit,mx_qinit, &
+                                      my_qinit,qinit,1)
+                    dq = dq / ((xipc-ximc)*(yjpc-yjmc))
 
-                        yjpc=min(yjp,y_hi_qinit)
-                        yjmc=max(yjm,y_low_qinit)
-
-                        dq = topointegral(ximc,xipc,yjmc,yjpc,x_low_qinit, &
-                                          y_low_qinit,dx_qinit,dy_qinit,mx_qinit, &
-                                          my_qinit,qinit,1)
-                        dq = dq / ((xipc-ximc)*(yjpc-yjmc))
-
-                        effective_b = max(aux(1,i,j), eta_init(2))
-                        q(1,i,j) = max((dq-effective_b) * rho(1),0.d0)
-                    endif
-                enddo
+                    effective_b = max(aux(1,i,j), eta_init(2))
+                    q(1,i,j) = max((dq - effective_b) * rho(1), 0.d0)
+                endif
             enddo
+        enddo
 
-        else if (qinit_type > 4) then
-            do i=1,mx
-                x = xlower + (i - 0.5d0) * dx
-                do j=1,my
-                    y = ylower + (j - 0.5d0) * dy
-                    
-                    ! Test perturbations - these only work in the x-direction
-                    if (qinit_type == 5 .or. qinit_type == 6) then
-                        ! Calculate wave family for perturbation
-                        gamma = aux(aux_layer_index+1,i,j) / aux(aux_layer_index,i,j)
-                        select case(wave_family)
-                            case(1) ! Shallow water, left-going
-                                alpha = 0.5d0 * (gamma - 1.d0 + sqrt((gamma-1.d0)**2+4.d0*r*gamma))
-                                lambda = -sqrt(g*aux(aux_layer_index,i,j)*(1.d0+alpha))
-                            case(2) ! Internal wave, left-going
-                                alpha = 0.5d0 * (gamma - 1.d0 - sqrt((gamma-1.d0)**2+4.d0*r*gamma))
-                                lambda = -sqrt(g*aux(aux_layer_index,i,j)*(1.d0+alpha))
-                            case(3) ! Internal wave, right-going
-                                alpha = 0.5d0 * (gamma - 1.d0 - sqrt((gamma-1.d0)**2+4.d0*r*gamma))
-                                lambda = sqrt(g*aux(aux_layer_index,i,j)*(1.d0+alpha))
-                            case(4) ! Shallow water, right-going
-                                alpha = 0.5d0 * (gamma - 1.d0 + sqrt((gamma-1.d0)**2+4.d0*r*gamma))
-                                lambda = sqrt(g*aux(aux_layer_index,i,j)*(1.d0+alpha))
-                        end select
-                        eigen_vector = [1.d0,lambda,0.d0,alpha,lambda*alpha,0.d0]
-
-                        if (qinit_type == 5) then
-                            ! Add perturbation
-                            if ((x < init_location(1)).and.(wave_family >= 3)) then
-                                q(1:3,i,j) = q(1:3,i,j) + rho(1) * epsilon * eigen_vector(1:3)
-                                q(4:6,i,j) = q(4:6,i,j) + rho(2) * epsilon * eigen_vector(4:6)
-                            else if ((x > init_location(1)).and.(wave_family < 3)) then
-                                q(1:2,i,j) = q(1:2,i,j) + rho(1) * epsilon * eigen_vector(1:2)
-                                q(4:5,i,j) = q(4:5,i,j) + rho(2) * epsilon * eigen_vector(4:5)
-                            endif
-                        ! Gaussian wave along a direction on requested wave family
-                        else if (qinit_type == 6) then
-                            ! Transform back to computational coordinates
-                            x_c = x * cos(angle) + y * sin(angle) - init_location(1)
-                            deta = epsilon * exp(-(x_c/sigma)**2)
-                            q(1,i,j) = q(1,i,j) + rho(1) * deta
-                            q(4,i,j) = q(4,i,j) + rho(2) * alpha * deta
-                        endif
-                    ! Symmetric gaussian hump
-                    else if (qinit_type == 7) then
-                        deta = epsilon * exp(-((x-init_location(1))/sigma)**2)  &
-                                       * exp(-((y-init_location(2))/sigma)**2)
-                        q(1,i,j) = q(1,i,j) + rho(1) * deta
-                    ! Shelf conditions from AN paper
-                    else if (qinit_type == 8) then
-                        alpha = 0.d0
-                        xmid = 0.5d0*(-180.e3 - 80.e3)
-                        if ((x > -130.e3).and.(x < -80.e3)) then
-                            deta = epsilon * sin((x-xmid)*pi/(-80.e3-xmid))
-                            q(4,i,j) = q(4,i,j) + rho(2) * alpha * deta
-                            q(1,i,j) = q(1,i,j) + rho(1) * deta * (1.d0 - alpha)
-                        endif
-                    ! Inundation test
-                    else if (qinit_type == 9) then
-                        x_c = (x - init_location(1)) * cos(angle) &
-                            + (y - init_location(2)) * sin(angle)
-                        deta = epsilon * exp(-(x_c/sigma)**2)
-                        q(1,i,j) = q(1,i,j) + rho(1) * deta
-                    endif
-                enddo
-            enddo
-
-        endif
-        
     end subroutine add_perturbation
 
         

@@ -1,6 +1,6 @@
 subroutine qinit(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
     
-    use qinit_module, only: qinit_type, add_perturbation, set_qinit
+    use qinit_module, only: qinit_type, add_perturbation
     use multilayer_module, only: num_layers, rho, eta_init
     
     implicit none
@@ -17,11 +17,11 @@ subroutine qinit(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
     
     ! Set flat state based on eta_init
     q = 0.d0
-    do j=1,my
-        do i=1,mx
+    do j = 1, my
+        do i = 1, mx
             ! Start with bottom layer and work up, set surface below for h
             eta_below = aux(1,i,j)
-            do m=num_layers,1,-1
+            do m = num_layers, 1, -1
                 layer_index = 3 * (m-1) + 1
                 q(layer_index,i,j) = max(0.d0,eta_init(m) - eta_below)
                 eta_below = q(layer_index,i,j) + eta_below
@@ -32,17 +32,16 @@ subroutine qinit(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
     
     ! Add perturbation to initial conditions
     if (qinit_type > 0) then
-        call set_qinit()
         call add_perturbation(meqn,mbc,mx,my,xlower,ylower,dx,dy,q,maux,aux)
     endif
 
     if (.false.) then
-        open(23, file='fort.aux',status='unknown',form='formatted')
-        print *,'Writing out aux arrays'
-        print *,' '
-        do j=1,my
-            do i=1,mx
-                write(23,*) i,j,(q(m,i,j),m=1,meqn)
+        open(23, file='fort.aux', status='unknown', form='formatted')
+        print *, 'Writing out aux arrays'
+        print *, ' '
+        do j = 1, my
+            do i = 1, mx
+                write(23, *) i, j, (q(m,i,j), m=1, meqn)
             enddo
         enddo
         close(23)
