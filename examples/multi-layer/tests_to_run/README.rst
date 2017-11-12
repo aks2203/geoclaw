@@ -1,5 +1,5 @@
 
-.. _geoclaw_examples_multilayer_plane_wave:
+.. _geoclaw_examples_multilayer_tests_to_run:
 
 Basic 2D Multi-Layer Shallow Water Examples
 ===========================================
@@ -13,9 +13,3 @@ included.  To run the basic plane-wave example use::
 
     make .plots
 
-Running the *run_tests.py* script will execute a family of different setups for
-both plane-waves incident at different angles to the grid and topography and a 
-set of the ``bubble tests``.  The basics of the Riemann solvers involved in
-these examples can be found in [1].
-
-1.	Mandli, K. T. A Numerical Method for the Two Layer Shallow Water Equations with Dry States. Ocean Modelling 72, 80–91 (2013).
