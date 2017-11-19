@@ -20,17 +20,18 @@ import os
 
 
 def run_test(outdir):
+    for i in xrange(5):
+        outdir = outdir+str(i)
+        # Command strings
+        run_cmd = 'make .output > run.out'
+        plot_stats_cmd = 'python plot_timing_stats.py'
+        save_cmd = 'mv _output %s' %(outdir)
+        img_save_cmd = 'mv *.png %s/' %(outdir)
 
-    # Command strings
-    run_cmd = 'make .output > run.out'
-    plot_stats_cmd = 'python plot_timing_stats.py'
-    save_cmd = 'mv _output %s' %(outdir)
-    img_save_cmd = 'mv *.png %s/' %(outdir)
-
-    os.system(run_cmd)
-    os.system(plot_stats_cmd)
-    os.system(save_cmd)
-    os.system(img_save_cmd)
+        os.system(run_cmd)
+        os.system(plot_stats_cmd)
+        os.system(save_cmd)
+        os.system(img_save_cmd)
 
 # two setrun files: setrun1.py setrun2.py
 # setrun1.py has AMR at 4 levels with ratios [2,2,4]
