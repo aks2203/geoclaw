@@ -21,9 +21,9 @@ import os
 
 def run_test(outdir):
     for i in xrange(5):
-        outdir = outdir+str(i)
+        outdir = outdir + str(i)
         # Command strings
-        run_cmd = 'make .output > run.out'
+        run_cmd = 'touch setrun.py; make .output'
         plot_stats_cmd = 'python plot_timing_stats.py'
         save_cmd = 'mv _output %s' %(outdir)
         img_save_cmd = 'mv *.png %s/' %(outdir)
@@ -48,6 +48,7 @@ def mt_on():
 
 def mt_off():
     os.system('export FFLAGS=-02')
+    os.system('make new')
 
 # First run:
     # setrun1 - single thread
