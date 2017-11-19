@@ -122,8 +122,8 @@ def setrun(claw_pkg='geoclaw'):
 
 
     # Number of grid cells: Coarsest grid
-    clawdata.num_cells[0] = 80
-    clawdata.num_cells[1] = 80
+    clawdata.num_cells[0] = 120
+    clawdata.num_cells[1] = 120
 
     # ---------------
     # Size of system:
@@ -168,7 +168,7 @@ def setrun(claw_pkg='geoclaw'):
     if clawdata.output_style==1:
         # Output nout frames at equally spaced times up to tfinal:
         clawdata.num_output_times = 10
-        clawdata.tfinal = 0.5
+        clawdata.tfinal = 0.50
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
