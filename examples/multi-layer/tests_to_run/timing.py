@@ -40,39 +40,39 @@ def run_test(outdir):
 #   and the coarsest mesh at 1920x1920
 
 def mt_on():
-    os.system('export OMP_NUM_THREADS=4')
-    os.system('export FFLAGS=-fopenmp')
-    os.system('export OMP_STACKSIZE=16M')
+    os.environ["OMP_NUM_THREADS"] = '4'
+    os.environ["FFLAGS"] = '-fopenmp'
+    os.environ["OMP_STACKSIZE"] = '16M'
     os.system('ulimit -s unlimited')
     os.system('make new')
 
 def mt_off():
-    os.system('export FFLAGS=-02')
+    os.environ["FFLAGS"] = ''
     os.system('make new')
 
 # First run:
     # setrun1 - single thread
 os.system('cp setrun1.py setrun.py')
 mt_off()
-run_test('amr_single_thread')
+run_test('amr_single_thread_one_layer')
 
 
 # Second run:
     # setrun1 - multithread
 os.system('cp setrun1.py setrun.py')
 mt_on()
-run_test('amr_multi_thread')
+run_test('amr_multi_thread_one_layer')
 
 
 # Third run:
     # setrun2 - single thread
 os.system('cp setrun2.py setrun.py')
 mt_off()
-run_test('no_amr_single_thread')
+run_test('no_amr_single_thread_one_layer')
 
 
 # Fourth run:
     # setrun2 - multithread
 os.system('cp setrun2.py setrun.py')
 mt_on()
-run_test('no_amr_multi_thread')
+run_test('no_amr_multi_thread_one_layer')
