@@ -5,6 +5,8 @@ Requires modified valout function to print this info.
 
 
 from __future__ import print_function
+import matplotlib
+matplotlib.use('Agg')
 from pylab import *
 import glob
 

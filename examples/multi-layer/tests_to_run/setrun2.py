@@ -462,7 +462,7 @@ def set_multilayer(rundata):
 
     # Physics parameters
     data.num_layers = 2
-    data.eta = [0.0, -0.6]
+    data.eta = [0.0, -1.6]
     data.rho = [922.5, 1025.0]
 
     # Algorithm parameters
