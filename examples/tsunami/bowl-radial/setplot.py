@@ -78,7 +78,7 @@ def setplot(plotdata=None):
     plotitem.pcolor_cmin = -0.9
     plotitem.pcolor_cmax = 0.9
     plotitem.add_colorbar = True
-    plotitem.amr_celledges_show = [1,1,0]
+    plotitem.amr_celledges_show = [0,0,0]
     plotitem.amr_patchedges_show = [1]
 
     # Land
@@ -88,9 +88,56 @@ def setplot(plotdata=None):
     plotitem.pcolor_cmin = 0.0
     plotitem.pcolor_cmax = 100.0
     plotitem.add_colorbar = False
-    plotitem.amr_celledges_show = [1,1,0]
+    plotitem.amr_celledges_show = [0,0,0]
     plotaxes.xlimits = [-100,100]
     plotaxes.ylimits = [-100,100]
+
+    #-----------------------------------------
+    # Figure for cross section
+    #-----------------------------------------
+    plotfigure = plotdata.new_plotfigure(name='cross-section', figno=1)
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = [-100,100]
+    plotaxes.ylimits = [-100,100]
+    plotaxes.title = 'Cross section at y=0'
+    # def plot_topo_xsec(current_data):
+    #     from pylab import plot, cos,sin,where,legend,nan
+    #     t = current_data.t
+
+    #     x = linspace(-2,2,201)
+    #     y = 0.
+    #     B = h0*(x**2 + y**2)/a**2 - h0
+    #     eta1 = sigma*h0/a**2 * (2.*x*cos(omega*t) + 2.*y*sin(omega*t) -sigma)
+    #     etatrue = where(eta1>B, eta1, nan)
+    #     plot(x, etatrue, 'r', label="true solution", linewidth=2)
+    #     plot(x, B, 'g', label="bathymetry")
+    #     ## plot([0],[-1],'kx',label="Level 1")  # shouldn't show up in plots,
+    #     ## plot([0],[-1],'bo',label="Level 2")  # but will produced desired legend
+    #     plot([0],[-1],'bo',label="Computed")  ## need to fix plotstyle
+    #     legend()
+    # plotaxes.afteraxes = plot_topo_xsec
+
+    plotitem = plotaxes.new_plotitem(plot_type='1d_from_2d_data')
+
+    def xsec(current_data):
+        # Return x value and surface eta at this point, along y=0
+        from pylab import find,ravel
+        x = current_data.x
+        y = current_data.y
+        dy = current_data.dy
+        q = current_data.q
+
+        ij = find((y <= dy/2.) & (y > -dy/2.))
+        x_slice = ravel(x)[ij]
+        eta_slice = ravel(q[3,:,:])[ij]
+        return x_slice, eta_slice
+
+    plotitem.map_2d_to_1d = xsec
+    plotitem.plotstyle = 'kx'     ## need to be able to set amr_plotstyle
+    plotitem.kwargs = {'markersize':3}
+    plotitem.amr_show = [0]  # plot on all levels
 
 
 
@@ -98,7 +145,7 @@ def setplot(plotdata=None):
     # Figure for zoom
     #-----------------------------------------
     plotfigure = plotdata.new_plotfigure(name='Zoom', figno=10)
-    #plotfigure.show = False
+    plotfigure.show = False
     plotfigure.kwargs = {'figsize':[12,7]}
 
     # Set up for axes in this figure:

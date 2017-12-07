@@ -113,8 +113,8 @@ def setrun(claw_pkg='geoclaw'):
 
     if clawdata.output_style==1:
         # Output nout frames at equally spaced times up to tfinal:
-        clawdata.num_output_times = 24
-        clawdata.tfinal = 8.0
+        clawdata.num_output_times = 10
+        clawdata.tfinal = 20.0
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
     elif clawdata.output_style == 2:
@@ -261,9 +261,9 @@ def setrun(claw_pkg='geoclaw'):
     amrdata.amr_levels_max = 4
 
     # List of refinement ratios at each level (length at least mxnest-1)
-    amrdata.refinement_ratios_x = [2,4,4]
-    amrdata.refinement_ratios_y = [2,4,4]
-    amrdata.refinement_ratios_t = [2,4,4]
+    amrdata.refinement_ratios_x = [2,2,4]
+    amrdata.refinement_ratios_y = [2,2,4]
+    amrdata.refinement_ratios_t = [2,2,4]
 
 
     # Specify type of each aux variable in amrdata.auxtype.
@@ -311,12 +311,12 @@ def setrun(claw_pkg='geoclaw'):
     regions = rundata.regiondata.regions
     # to specify regions of refinement append lines of the form
     #  [minlevel,maxlevel,t1,t2,x1,x2,y1,y2]
-    regions.append([1, 1, 0., 1.e10, -100.,100., -100.,100.])
-    regions.append([1, 2, 0., 1.e10,    0.,100.,    0.,100.])
-    regions.append([2, 3, 3., 1.e10,   52., 72.,   52., 72.])
-    regions.append([2, 3, 3., 1.e10,   75., 95.,   -10.,  10.])
-    regions.append([2, 4, 3.4, 1.e10,   57., 68.,   57., 68.])
-    regions.append([2, 4, 3.4, 1.e10,   83., 92.,   -4.,  4.])
+    # regions.append([1, 1, 0., 1.e10, -100.,100., -100.,100.])
+    # regions.append([1, 2, 0., 1.e10,    0.,100.,    0.,100.])
+    # regions.append([2, 3, 3., 1.e10,   52., 72.,   52., 72.])
+    # regions.append([2, 3, 3., 1.e10,   75., 95.,   -10.,  10.])
+    # regions.append([2, 4, 3.4, 1.e10,   57., 68.,   57., 68.])
+    # regions.append([2, 4, 3.4, 1.e10,   83., 92.,   -4.,  4.])
 
     # == setgauges.data values ==
     # for gauges append lines of the form  [gaugeno, x, y, t1, t2]
@@ -369,7 +369,7 @@ def setgeo(rundata):
 
     # == Algorithm and Initial Conditions ==
     geo_data.sea_level = 0.0
-    geo_data.dry_tolerance = 1.e-3
+    geo_data.dry_tolerance = 1.e-2
     geo_data.friction_forcing = True
     geo_data.manning_coefficient = 0.025
     geo_data.friction_depth = 20.0
@@ -385,7 +385,7 @@ def setgeo(rundata):
     topo_data = rundata.topo_data
     # for topography, append lines of the form
     #    [topotype, minlevel, maxlevel, t1, t2, fname]
-    topo_data.topofiles.append([2, 1, 1, 0., 1.e10, 'bowl.topotype2'])
+    topo_data.topofiles.append([2, 1, 3, 0., 1.e10, 'bowl.topotype2'])
 
     # == setdtopo.data values ==
     dtopo_data = rundata.dtopo_data
@@ -397,7 +397,7 @@ def setgeo(rundata):
     rundata.qinit_data.qinitfiles = []
     # for qinit perturbations, append lines of the form: (<= 1 allowed for now!)
     #   [minlev, maxlev, fname]
-    rundata.qinit_data.qinitfiles.append([1, 2, 'hump.xyz'])
+    rundata.qinit_data.qinitfiles.append([1, 3, 'hump.xyz'])
 
     # == setfixedgrids.data values ==
     fixedgrids = rundata.fixed_grid_data.fixedgrids
