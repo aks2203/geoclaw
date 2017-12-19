@@ -354,7 +354,21 @@ def setplot(plotdata=None, bathy_location=0.15, bathy_angle=0.0,
 
     # Land
     ml_plot.add_land(plotaxes, 1)
-    
+
+    # ========================================================================
+    # Figure for cross section
+    # ========================================================================
+    plotfigure = plotdata.new_plotfigure(name='cross-section', figno=4)
+    plotfigure.show = True
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = xlimits
+    plotaxes.ylimits = [-1.0, 0.4]
+    plotaxes.title = 'Cross section at y=0'
+    ml_plot.add_cross_section(plotaxes, 1)
+    ml_plot.add_cross_section(plotaxes, 2)
+    ml_plot.add_land_cross_section(plotaxes)
+
     # ========================================================================
     #  Contour plot for surface
     # ========================================================================
