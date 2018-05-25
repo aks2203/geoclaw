@@ -45,8 +45,8 @@ def layered_land(surface, DRY_TOL=10**-3):
         Return a masked array containing the surface elevation only in dry cells.
         """
         q = cd.q
-        h = q[(surface-1)*3,:,:]
-        eta = q[surface+5,:,:]
+        h = q[(surface)*3,:,:]
+        eta = q[surface+6,:,:]
         land = numpy.ma.masked_where(h>DRY_TOL, eta)
         return land
     
@@ -79,11 +79,11 @@ def eta_elevation(surface, DRY_TOL=10**-3):
         h1 = cd.q[0,:,:]
         h2 = cd.q[3,:,:]
         b = cd.q[6,:,:] - h1 - h2
-        if surface == 1: 
+        if surface == 0: 
             h = h1
             eta = eta1(cd)
             eta_init = ml_data.eta[0]
-        elif surface == 2:
+        elif surface == 1:
             h = h2
             eta = eta2(cd)
             eta_init = ml_data.eta[1]
@@ -100,11 +100,11 @@ def initially_wet(surface, DRY_TOL=10**-3):
         h1 = cd.q[0,:,:]
         h2 = cd.q[3,:,:]
         b = cd.q[6,:,:] - h1 - h2
-        if surface == 1: 
+        if surface == 0: 
             h = h1
             eta = eta1(cd)
             eta_init = ml_data.eta[0]
-        elif surface == 2:
+        elif surface == 1:
             h = h2
             eta = eta2(cd)
             eta_init = ml_data.eta[1]
@@ -122,11 +122,11 @@ def inundated(surface, DRY_TOL=10**-3):
         h1 = cd.q[0,:,:]
         h2 = cd.q[3,:,:]
         b = cd.q[6,:,:] - h1 - h2
-        if surface == 1: 
+        if surface == 0: 
             h = h1
             eta = eta1(cd)
             eta_init = ml_data.eta[0]
-        elif surface == 2:
+        elif surface == 1:
             h = h2
             eta = eta2(cd)
             eta_init = ml_data.eta[1]
@@ -219,14 +219,7 @@ def add_inundation(plotaxes,surface,bounds=None,plot_type='pcolor'):
 def add_surface_elevation(plotaxes,surface,bounds=None,plot_type='pcolor'):
     if plot_type == 'pcolor' or plot_type == 'imshow':
         plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
-        # plotitem.plot_var = geoplot.surface
-        # plotitem.plot_var = eta_elevation(surface)
         plotitem.plot_var = initially_wet(surface)        
-
-        # if surface == 1:
-        #     plotitem.plot_var = eta1
-        # elif surface == 2:
-        #     plotitem.plot_var = eta2
         if bounds is not None:                
             plotitem.pcolor_cmin = bounds[0]
             plotitem.pcolor_cmax = bounds[1]
@@ -237,7 +230,7 @@ def add_surface_elevation(plotaxes,surface,bounds=None,plot_type='pcolor'):
 
     elif plot_type == 'contour':
         plotitem = plotaxes.new_plotitem(plot_type='2d_contour')
-        plotitem.plot_var = surface + 5
+        plotitem.plot_var = surface + 6
         if bounds is not None:
             plotitem.contour_levels = bounds
         plotitem.amr_contour_show = [1] * 10
@@ -253,9 +246,9 @@ def add_layer_depth(plotaxes, layer, bounds=None, plot_type='pcolor'):
 
     if plot_type == 'pcolor' or plot_type == 'imshow':
         plotitem = plotaxes.new_plotitem(plot_type='2d_imshow')
-        if layer == 1:
+        if layer == 0:
             plotitem.plot_var = 0
-        elif layer == 2:
+        elif layer == 1:
             plotitem.plot_var = 3
         if bounds is not None:
             plotitem.imshow_cmin = bounds[0]
@@ -270,9 +263,9 @@ def add_speed(plotaxes, layer, bounds=None, plot_type='pcolor'):
 
     if plot_type == 'pcolor' or plot_type == 'imshow':
         plotitem = plotaxes.new_plotitem(plot_type='2d_imshow')
-        if layer == 1:
+        if layer == 0:
             plotitem.plot_var = water_speed1
-        elif layer == 2:
+        elif layer == 1:
             plotitem.plot_var = water_speed2
         plotitem.imshow_cmap = speed_cmap
         if bounds is not None:
@@ -287,9 +280,9 @@ def add_x_velocity(plotaxes, layer, plot_type='pcolor', bounds=None):
 
     if plot_type == 'pcolor' or plot_type == 'imshow':
         plotitem = plotaxes.new_plotitem(plot_type='2d_imshow')
-        if layer == 1:
+        if layer == 0:
             plotitem.plot_var = water_u1
-        if layer == 2:
+        elif layer == 1:
             plotitem.plot_var = water_u2
         if bounds is not None:
             plotitem.imshow_cmin = bounds[0]
@@ -304,9 +297,9 @@ def add_y_velocity(plotaxes, layer, plot_type='pcolor', bounds=None):
 
     if plot_type == 'pcolor' or plot_type == 'imshow':
         plotitem = plotaxes.new_plotitem(plot_type='2d_imshow')
-        if layer == 1:
+        if layer == 0:
             plotitem.plot_var = water_v1
-        if layer == 2:
+        elif layer == 1:
             plotitem.plot_var = water_v2
         if bounds is not None:
             plotitem.imshow_cmin = bounds[0]
@@ -530,11 +523,11 @@ def add_velocities_profile_plot(plot_data, slice_value, direction='x',
 
 def add_cross_section(plotaxes, surface):
     r""" Add cross section view of surface"""
-    if surface == 1: 
+    if surface == 0: 
         plot_eta = eta1
         clr = 'c'
         sty = 'x'
-    if surface == 2: 
+    if surface == 1: 
         plot_eta = eta2
         clr = 'b'
         sty = '+'
