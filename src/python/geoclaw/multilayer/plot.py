@@ -521,7 +521,7 @@ def add_velocities_profile_plot(plot_data, slice_value, direction='x',
 
 
 
-def add_cross_section(plotaxes, surface):
+def add_cross_section(plotaxes, surface, loc):
     r""" Add cross section view of surface"""
     if surface == 0: 
         plot_eta = eta1
@@ -539,7 +539,7 @@ def add_cross_section(plotaxes, surface):
         y = current_data.y
         dy = current_data.dy
 
-        ij = find((y <= dy/2.) & (y > -dy/2.))
+        ij = find((y <= loc + dy/2.) & (y > loc - dy/2.))
         x_slice = ravel(x)[ij]
         eta_slice = ravel(plot_eta(current_data))[ij]
         return x_slice, eta_slice

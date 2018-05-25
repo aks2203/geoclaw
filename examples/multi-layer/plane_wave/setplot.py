@@ -107,6 +107,7 @@ def setplot(plotdata=None, bathy_location=0.15, bathy_angle=0.0,
 
     xlimits = [-0.5, 0.5]
     ylimits = [-0.5, 0.5]
+    zlimits = [-1.0, 0.1]
     eta = [multilayer_data.eta[0], multilayer_data.eta[1]]
     top_surface_limits = [eta[0] - 0.03, eta[0] + 0.03]
     internal_surface_limits = [eta[1] - 0.015, eta[1] + 0.015]
@@ -446,6 +447,22 @@ def setplot(plotdata=None, bathy_location=0.15, bathy_angle=0.0,
     plotitem.amr_patch_bgcolor = ['#ffeeee', '#eeeeff', '#eeffee']
     plotitem.amr_celledges_show = [0,0,0]
     plotitem.amr_patchedges_show = [1,1,1]
+
+    # ========================================================================
+    # Cross-section Plot
+    # ========================================================================
+    plotfigure = plotdata.new_plotfigure(name='cross-section', figno=4)
+    plotfigure.show = True
+
+    # Set up for axes in this figure:
+    plotaxes = plotfigure.new_plotaxes()
+    plotaxes.xlimits = xlimits
+    plotaxes.ylimits = zlimits
+    loc = 0
+    plotaxes.title = 'Cross section at y=%d' % loc
+    ml_plot.add_cross_section(plotaxes, 0, loc)
+    ml_plot.add_cross_section(plotaxes, 1, loc)
+    ml_plot.add_land_cross_section(plotaxes)
     
     # ========================================================================
     #  Vorticity Plot
