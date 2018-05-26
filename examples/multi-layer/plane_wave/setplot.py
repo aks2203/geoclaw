@@ -448,22 +448,24 @@ def setplot(plotdata=None, bathy_location=0.15, bathy_angle=0.0,
     plotitem.amr_celledges_show = [0,0,0]
     plotitem.amr_patchedges_show = [1,1,1]
 
-    # ========================================================================
-    # Cross-section Plot
-    # ========================================================================
-    plotfigure = plotdata.new_plotfigure(name='cross-section', figno=4)
-    plotfigure.show = True
+    # # ========================================================================
+    # # Cross-section Plot
+    # # ========================================================================
+    # plotfigure = plotdata.new_plotfigure(name='cross-section', figno=4)
+    # plotfigure.show = True
 
-    # Set up for axes in this figure:
-    plotaxes = plotfigure.new_plotaxes()
-    plotaxes.xlimits = xlimits
-    plotaxes.ylimits = zlimits
-    loc = 0
-    plotaxes.title = 'Cross section at y=%d' % loc
-    ml_plot.add_cross_section(plotaxes, 0, loc)
-    ml_plot.add_cross_section(plotaxes, 1, loc)
-    ml_plot.add_land_cross_section(plotaxes)
-    
+    # # Set up for axes in this figure:
+    # plotaxes = plotfigure.new_plotaxes()
+    # plotaxes.xlimits = xlimits
+    # plotaxes.ylimits = zlimits
+    # loc = 0
+    # plotaxes.title = 'Cross section at y=%d' % loc
+    # ml_plot.add_cross_section(plotaxes, 0, loc)
+    # ml_plot.add_cross_section(plotaxes, 1, loc)
+    # ml_plot.add_land_cross_section(plotaxes)
+
+    ml_plot.add_combined_profile_plot(plotdata, , direction='x', figno=120)
+
     # ========================================================================
     #  Vorticity Plot
     # ========================================================================

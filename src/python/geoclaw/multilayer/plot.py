@@ -38,7 +38,7 @@ layer_index = [0, 3]
 eta_index = 6
 
 
-def layered_land(surface, DRY_TOL=10**-3):
+def layered_land(surface, DRY_TOL=1e-3):
 
     def land(cd):
         """
@@ -52,7 +52,7 @@ def layered_land(surface, DRY_TOL=10**-3):
     
     return land
 
-def extract_eta(h,eta,DRY_TOL=10**-3):
+def extract_eta(h,eta,DRY_TOL=1e-3):
     masked_eta = numpy.ma.masked_where(numpy.abs(h) < DRY_TOL, eta)
     return masked_eta
 
@@ -70,7 +70,7 @@ def eta2(cd):
     return eta(cd, 1)
 
 
-def eta_elevation(surface, DRY_TOL=10**-3):
+def eta_elevation(surface, DRY_TOL=1e-3):
 
     def eta_func(cd):
         ml_data = clawpack.geoclaw.data.MultilayerData()
@@ -91,7 +91,7 @@ def eta_elevation(surface, DRY_TOL=10**-3):
 
     return eta_func
 
-def initially_wet(surface, DRY_TOL=10**-3):
+def initially_wet(surface, DRY_TOL=1e-3):
 
     def eta_func(cd):
         ml_data = clawpack.geoclaw.data.MultilayerData()
@@ -113,7 +113,7 @@ def initially_wet(surface, DRY_TOL=10**-3):
 
     return eta_func
 
-def inundated(surface, DRY_TOL=10**-3):
+def inundated(surface, DRY_TOL=1e-3):
 
     def h_func(cd):
         ml_data = clawpack.geoclaw.data.MultilayerData()
@@ -150,7 +150,7 @@ def b(current_data):
     return eta1(current_data) - h1 - h2
 
 
-def extract_velocity(h, hu, DRY_TOL=10**-8):
+def extract_velocity(h, hu, DRY_TOL=1e-8):
     u = numpy.ones(hu.shape) * numpy.nan
     index = numpy.nonzero((numpy.abs(h) > DRY_TOL) * (h != numpy.nan))
     u[index[0], index[1]] = hu[index[0], index[1]] / h[index[0], index[1]]
@@ -341,17 +341,18 @@ def add_land(plotaxes, surface, plot_type='pcolor', bounds=[-10, 10]):
         raise NotImplementedError("Plot type %s not implemented" % plot_type)
 
 
-def add_combined_profile_plot(plot_data, slice_value, direction='x',
+def add_combined_profile_plot(plotdata, slice_value, direction='x',
                               figno=120):
+    multilayer_data = clawpack.geoclaw.data.MultilayerData()
     def slice_index(cd):
         if direction == 'x':
-            if cd.grid.y.lower < slice_value < cd.grid.y.upper:
-                return int((slice_value - cd.grid.y.lower) / cd.dy - 0.5)
+            if cd.patch.y.lower < slice_value < cd.patch.y.upper:
+                return int((slice_value - cd.patch.y.lower) / cd.dy - 0.5)
             else:
                 return None
         elif direction == 'y':
-            if cd.grid.x.lower < slice_value < cd.grid.x.upper:
-                return int((slice_value - cd.grid.x.lower) / cd.dx - 0.5)
+            if cd.patch.x.lower < slice_value < cd.patch.x.upper:
+                return int((slice_value - cd.patch.x.lower) / cd.dx - 0.5)
             else:
                 return None
 
@@ -361,12 +362,12 @@ def add_combined_profile_plot(plot_data, slice_value, direction='x',
             if index:
                 return current_data.x[:, index], b(current_data)[:, index]
             else:
-                return None
+                return numpy.array([]), numpy.array([])
         elif direction == 'y':
             if index:
                 return current_data.y[index, :], b(current_data)[index, :]
             else:
-                return None
+                return numpy.array([]), numpy.array([])
 
     def lower_surface(current_data):
         index = slice_index(current_data)
@@ -374,12 +375,12 @@ def add_combined_profile_plot(plot_data, slice_value, direction='x',
             if index:
                 return current_data.x[:, index], eta2(current_data)[:, index]
             else:
-                return None
+                return numpy.array([]), numpy.array([])
         elif direction == 'y':
             if index:
                 return current_data.y[index, :], eta2(current_data)[index, :]
             else:
-                return None
+                return numpy.array([]), numpy.array([])
 
     def upper_surface(current_data):
         index = slice_index(current_data)
@@ -387,12 +388,12 @@ def add_combined_profile_plot(plot_data, slice_value, direction='x',
             if index:
                 return current_data.x[:, index], eta1(current_data)[:, index]
             else:
-                return None
+                return numpy.array([]), numpy.array([])
         elif direction == 'y':
             if index:
                 return current_data.y[index, :], eta1(current_data)[index, :]
             else:
-                return None
+                return numpy.array([]), numpy.array([])
 
     # Surfaces
     plotfigure = plotdata.new_plotfigure(name='combined_surface_%s' % figno,
@@ -404,12 +405,12 @@ def add_combined_profile_plot(plot_data, slice_value, direction='x',
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(2,1,1)'
     plotaxes.title = 'Surfaces Profile %s at %s' % (direction, slice_value)
-    if multilayer_data.init_type == 2:
-        plotaxes.xlimits = xlimits
-    elif multilayer_data.init_type == 6:
-        plotaxes.xlimits = ylimits
+    # if multilayer_data.init_type == 2:
+    #     plotaxes.xlimits = xlimits
+    # elif multilayer_data.init_type == 6:
+    #     plotaxes.xlimits = ylimits
 
-    plotaxes.ylimits = top_surf_zoomed
+    # plotaxes.ylimits = top_surf_zoomed
 
     def top_surf_afteraxes(cd):
         axes = plt.gca()
@@ -417,8 +418,8 @@ def add_combined_profile_plot(plot_data, slice_value, direction='x',
         locs, labels = plt.xticks()
         labels = ['' for i in range(len(locs))]
         plt.xticks(locs, labels)
-        axes.plot([multilayer_data.bathy_location,
-                  multilayer_data.bathy_location], top_surf_zoomed, '--k')
+        # axes.plot([clawpack_geoclaw_data.bathy_location,
+        #           clawpack_geoclaw_data.bathy_location], top_surf_zoomed, '--k')
         axes.set_ylabel('m')
 
     plotaxes.afteraxes = top_surf_afteraxes
@@ -431,19 +432,19 @@ def add_combined_profile_plot(plot_data, slice_value, direction='x',
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.axescmd = 'subplot(2,1,2)'
     plotaxes.title = ''
-    if multilayer_data.init_type == 2:
-        plotaxes.xlimits = xlimits
-    elif multilayer_data.init_type == 6:
-        plotaxes.xlimits = ylimits
-    plotaxes.ylimits = bottom_surf_zoomed
+    # if multilayer_data.init_type == 2:
+    #     plotaxes.xlimits = xlimits
+    # elif multilayer_data.init_type == 6:
+    #     plotaxes.xlimits = ylimits
+    # plotaxes.ylimits = bottom_surf_zoomed
 
     def internal_surf_afteraxes(cd):
         axes = plt.gca()
         axes.set_title('')
         axes.set_ylabel('m')
-        axes.subplots_adjust(hspace=0.05)
-        axes.plot([multilayer_data.bathy_location,
-                  multilayer_data.bathy_location], bottom_surf_zoomed, '--k')
+        # axes.subplots_adjust(hspace=0.05)
+        # axes.plot([multilayer_data.bathy_location,
+        #           multilayer_data.bathy_location], bottom_surf_zoomed, '--k')
     plotaxes.afteraxes = internal_surf_afteraxes
     plotitem = plotaxes.new_plotitem(plot_type='1d_from_2d_data')
     plotitem.map_2d_to_1d = lower_surface
@@ -534,20 +535,39 @@ def add_cross_section(plotaxes, surface, loc):
 
     def xsec(current_data):
         # Return x value and surface eta at this point, along y=0
-        from pylab import find,ravel
-        x = current_data.x
-        y = current_data.y
-        dy = current_data.dy
+        x = current_data.x[:,0]
+        y = current_data.y[0,:]
+        y_dist = numpy.abs(y - loc)
+        ind = numpy.argmin(y_dist)
+        extended_q = numpy.vstack((current_data.q[:,:,ind], b(current_data)[:,ind]) )
+        return x, extended_q
 
-        ij = find((y <= loc + dy/2.) & (y > loc - dy/2.))
-        x_slice = ravel(x)[ij]
-        eta_slice = ravel(plot_eta(current_data))[ij]
-        return x_slice, eta_slice
+    def fill_between(cd):
+        b = cd.q[-1,:]
+        x = cd.x
+        eta_1 = cd.q[6,:]
+        eta_1 = cd.q[7,:]
+
+        depth_axes = fig.add_subplot(111)
+        # Bottom layer
+        depth_axes.fill_between(x,b,eta_2,color=plot.bottom_color)
+        # Top Layer
+        depth_axes.fill_between(x,eta_2,eta_1,color=plot.top_color)
+        # Plot bathy
+        depth_axes.plot(x,b,'k',linestyle=plot.bathy_linestyle)
+        # Plot internal layer
+        depth_axes.plot(x,eta_2,'k')#,linestyle=plot.internal_linestyle)
+        # Plot surface
+        depth_axes.plot(x,eta_1,'k')#,linestyle=plot.surface_linestyle)
+        
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_from_2d_data')
     plotitem.map_2d_to_1d = xsec
-    plotitem.color = clr
-    plotitem.plotstyle = sty
+    plotitem.plot_var = 0
+    # plotitem.color = clr
+    # plotitem.plotstyle = sty
+    plotaxes.afteraxes = fill_between
+    
 
     plotitem.show = True
 
