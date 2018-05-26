@@ -522,7 +522,56 @@ def add_velocities_profile_plot(plot_data, slice_value, direction='x',
 
 
 
-def add_cross_section(plotaxes, surface, loc):
+# def add_cross_section(plotaxes, surface, loc):
+#     r""" Add cross section view of surface"""
+#     if surface == 0: 
+#         plot_eta = eta1
+#         clr = 'c'
+#         sty = 'x'
+#     if surface == 1: 
+#         plot_eta = eta2
+#         clr = 'b'
+#         sty = '+'
+
+#     def xsec(current_data):
+#         # Return x value and surface eta at this point, along y=0
+#         x = current_data.x[:,0]
+#         y = current_data.y[0,:]
+#         y_dist = numpy.abs(y - loc)
+#         ind = numpy.argmin(y_dist)
+#         extended_q = numpy.vstack((current_data.q[:,:,ind], b(current_data)[:,ind]) )
+#         return x, extended_q
+
+#     def fill_between(cd):
+#         b = cd.q[-1,:]
+#         x = cd.x
+#         eta_1 = cd.q[6,:]
+#         eta_1 = cd.q[7,:]
+
+#         depth_axes = fig.add_subplot(111)
+#         # Bottom layer
+#         depth_axes.fill_between(x,b,eta_2,color=plot.bottom_color)
+#         # Top Layer
+#         depth_axes.fill_between(x,eta_2,eta_1,color=plot.top_color)
+#         # Plot bathy
+#         depth_axes.plot(x,b,'k',linestyle=plot.bathy_linestyle)
+#         # Plot internal layer
+#         depth_axes.plot(x,eta_2,'k')#,linestyle=plot.internal_linestyle)
+#         # Plot surface
+#         depth_axes.plot(x,eta_1,'k')#,linestyle=plot.surface_linestyle)
+        
+
+#     plotitem = plotaxes.new_plotitem(plot_type='1d_from_2d_data')
+#     plotitem.map_2d_to_1d = xsec
+#     plotitem.plot_var = 0
+#     # plotitem.color = clr
+#     # plotitem.plotstyle = sty
+#     plotaxes.afteraxes = fill_between
+    
+
+#     plotitem.show = True
+
+def add_cross_section(plotaxes, surface, loc=0):
     r""" Add cross section view of surface"""
     if surface == 0: 
         plot_eta = eta1
@@ -535,43 +584,24 @@ def add_cross_section(plotaxes, surface, loc):
 
     def xsec(current_data):
         # Return x value and surface eta at this point, along y=0
-        x = current_data.x[:,0]
-        y = current_data.y[0,:]
-        y_dist = numpy.abs(y - loc)
-        ind = numpy.argmin(y_dist)
-        extended_q = numpy.vstack((current_data.q[:,:,ind], b(current_data)[:,ind]) )
-        return x, extended_q
+        from pylab import find,ravel
+        x = current_data.x
+        y = current_data.y
+        dy = current_data.dy
 
-    def fill_between(cd):
-        b = cd.q[-1,:]
-        x = cd.x
-        eta_1 = cd.q[6,:]
-        eta_1 = cd.q[7,:]
-
-        depth_axes = fig.add_subplot(111)
-        # Bottom layer
-        depth_axes.fill_between(x,b,eta_2,color=plot.bottom_color)
-        # Top Layer
-        depth_axes.fill_between(x,eta_2,eta_1,color=plot.top_color)
-        # Plot bathy
-        depth_axes.plot(x,b,'k',linestyle=plot.bathy_linestyle)
-        # Plot internal layer
-        depth_axes.plot(x,eta_2,'k')#,linestyle=plot.internal_linestyle)
-        # Plot surface
-        depth_axes.plot(x,eta_1,'k')#,linestyle=plot.surface_linestyle)
-        
+        ij = find((y <= loc + dy/2.) & (y > loc -dy/2.))
+        x_slice = ravel(x)[ij]
+        eta_slice = ravel(plot_eta(current_data))[ij]
+        return x_slice, eta_slice
 
     plotitem = plotaxes.new_plotitem(plot_type='1d_from_2d_data')
     plotitem.map_2d_to_1d = xsec
-    plotitem.plot_var = 0
-    # plotitem.color = clr
-    # plotitem.plotstyle = sty
-    plotaxes.afteraxes = fill_between
-    
+    plotitem.color = clr
+    plotitem.plotstyle = sty
 
     plotitem.show = True
 
-def add_land_cross_section(plotaxes):
+def add_land_cross_section(plotaxes, loc=0):
     r""" Add cross section view of topo"""
 
     def plot_topo_xsec(current_data):
@@ -580,7 +610,7 @@ def add_land_cross_section(plotaxes):
         y = current_data.y
         dy = current_data.dy
 
-        ij = find((y <= dy/2.) & (y > -dy/2.))
+        ij = find((y <= loc + dy/2.) & (y > loc -dy/2.))
         x_slice = ravel(x)[ij]
         b_slice = ravel(b(current_data))[ij]
         return x_slice, b_slice
