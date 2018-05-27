@@ -71,7 +71,7 @@ subroutine step2(maxm,meqn,maux,mbc,mx,my, &
 
     ! Parameters
     ! Relimit fluxes to maintain positivity
-    logical, parameter :: relimit = .false.
+    logical, parameter :: relimit = .true.
 
     cflgrid = 0.d0
     dtdx = dt/dx
