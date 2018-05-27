@@ -106,8 +106,8 @@ def setplot(plotdata=None):
     
     eta = [multilayer_data.eta[0],multilayer_data.eta[1]]
 
-    top_surface_limits = [eta[0]-10,eta[0]+10]
-    internal_surface_limits = [eta[1]-5,eta[1]+5]
+    top_surface_limits = [eta[0]-.1,eta[0]+.1]
+    internal_surface_limits = [eta[1]-.5,eta[1]+.5]
     depth_limits = [0.0, 0.4]
     top_speed_limits = [0.0,0.1]
     internal_speed_limits = [0.0,0.03]
@@ -127,9 +127,9 @@ def setplot(plotdata=None):
     plotaxes.scaled = True
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = ylimits
-    ml_plot.add_inundation(plotaxes, 1, bounds=depth_limits)
-    ml_plot.add_surface_elevation(plotaxes,1,bounds=top_surface_limits)
-    ml_plot.add_land(plotaxes, 1)
+    ml_plot.add_inundation(plotaxes, 0, bounds=depth_limits)
+    ml_plot.add_surface_elevation(plotaxes,0,bounds=top_surface_limits)
+    ml_plot.add_land(plotaxes, 0)
     
     # Bottom surface
     plotaxes = plotfigure.new_plotaxes()
@@ -138,10 +138,10 @@ def setplot(plotdata=None):
     plotaxes.scaled = True
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = ylimits
-    ml_plot.add_inundation(plotaxes, 2, bounds=depth_limits)
-    ml_plot.add_surface_elevation(plotaxes,2,bounds=internal_surface_limits)
+    ml_plot.add_inundation(plotaxes, 1, bounds=depth_limits)
+    ml_plot.add_surface_elevation(plotaxes,1,bounds=internal_surface_limits)
     ml_plot.add_colorbar = True
-    ml_plot.add_land(plotaxes, 2)
+    ml_plot.add_land(plotaxes, 1)
 
 
     # ========================================================================
@@ -154,9 +154,9 @@ def setplot(plotdata=None):
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = ylimits
     plotaxes.title = 'Cross section at y=0'
+    ml_plot.add_cross_section(plotaxes, 0)
     ml_plot.add_cross_section(plotaxes, 1)
-    ml_plot.add_cross_section(plotaxes, 2)
-    ml_plot.add_land_cross_section(plotaxes)
+    ml_plot.add_land_cross_section(plotaxes, 1)
 
 
     # ========================================================================
@@ -173,8 +173,8 @@ def setplot(plotdata=None):
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = ylimits
     plotaxes.axescmd = 'subplot(1,2,1)'
-    ml_plot.add_speed(plotaxes,1,bounds=top_speed_limits)
-    ml_plot.add_land(plotaxes, 1)
+    ml_plot.add_speed(plotaxes,0,bounds=top_speed_limits)
+    ml_plot.add_land(plotaxes, 0)
     
     # Bottom layer speed
     plotaxes = plotfigure.new_plotaxes()
@@ -183,8 +183,8 @@ def setplot(plotdata=None):
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = ylimits
     plotaxes.axescmd = 'subplot(1,2,2)'
-    ml_plot.add_speed(plotaxes,2,bounds=internal_speed_limits)
-    ml_plot.add_land(plotaxes, 2)
+    ml_plot.add_speed(plotaxes,1,bounds=internal_speed_limits)
+    ml_plot.add_land(plotaxes, 1)
     
     # Individual components
     plotfigure = plotdata.new_plotfigure(name='speed_components',figno=401)
@@ -198,8 +198,8 @@ def setplot(plotdata=None):
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = ylimits
     plotaxes.axescmd = 'subplot(2,2,1)'
-    ml_plot.add_x_velocity(plotaxes,1)
-    ml_plot.add_land(plotaxes, 1)
+    ml_plot.add_x_velocity(plotaxes,0)
+    ml_plot.add_land(plotaxes, 0)
     
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.title = "Y-Velocity - Top Layer"
@@ -207,8 +207,8 @@ def setplot(plotdata=None):
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = ylimits
     plotaxes.axescmd = 'subplot(2,2,2)'
-    ml_plot.add_y_velocity(plotaxes,1)
-    ml_plot.add_land(plotaxes, 1)
+    ml_plot.add_y_velocity(plotaxes,0)
+    ml_plot.add_land(plotaxes, 0)
     
     # Bottom layer
     plotaxes = plotfigure.new_plotaxes()
@@ -217,8 +217,8 @@ def setplot(plotdata=None):
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = ylimits
     plotaxes.axescmd = 'subplot(2,2,3)'
-    ml_plot.add_x_velocity(plotaxes,2)
-    ml_plot.add_land(plotaxes, 2)
+    ml_plot.add_x_velocity(plotaxes,1)
+    ml_plot.add_land(plotaxes, 1)
     
     plotaxes = plotfigure.new_plotaxes()
     plotaxes.title = "Y-Velocity - Bottom Layer"
@@ -226,8 +226,8 @@ def setplot(plotdata=None):
     plotaxes.xlimits = xlimits
     plotaxes.ylimits = ylimits
     plotaxes.axescmd = 'subplot(2,2,4)'
-    ml_plot.add_y_velocity(plotaxes,2)
-    ml_plot.add_land(plotaxes, 2)
+    ml_plot.add_y_velocity(plotaxes,1)
+    ml_plot.add_land(plotaxes, 1)
 
 
     #-----------------------------------------

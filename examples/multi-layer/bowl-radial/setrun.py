@@ -70,8 +70,8 @@ def setrun(claw_pkg='geoclaw'):
 
 
     # Number of grid cells: Coarsest grid
-    clawdata.num_cells[0] = 40
-    clawdata.num_cells[1] = 40
+    clawdata.num_cells[0] = 180
+    clawdata.num_cells[1] = 180
 
 
     # ---------------
@@ -116,7 +116,7 @@ def setrun(claw_pkg='geoclaw'):
 
     if clawdata.output_style==1:
         # Output nout frames at equally spaced times up to tfinal:
-        clawdata.num_output_times = 10
+        clawdata.num_output_times = 30
         clawdata.tfinal = 30.0
         clawdata.output_t0 = True  # output at initial (or restart) time?
 
@@ -170,8 +170,8 @@ def setrun(claw_pkg='geoclaw'):
     # clawdata.cfl_desired = 0.9
     # clawdata.cfl_max = 1.0
 
-    clawdata.cfl_desired = 0.75
-    clawdata.cfl_max = 1.0
+    clawdata.cfl_desired = 0.45
+    clawdata.cfl_max = 0.5
 
     # Maximum number of time steps to allow between output times:
     clawdata.steps_max = 5000
@@ -193,7 +193,7 @@ def setrun(claw_pkg='geoclaw'):
     #  0 or 'none'      ==> donor cell (only normal solver used)
     #  1 or 'increment' ==> corner transport of waves
     #  2 or 'all'       ==> corner transport of 2nd order corrections too
-    clawdata.transverse_waves = 2
+    clawdata.transverse_waves = 1
 
     # Number of waves in the Riemann solution:
     clawdata.num_waves = 6
@@ -264,7 +264,7 @@ def setrun(claw_pkg='geoclaw'):
     amrdata = rundata.amrdata
 
     # max number of refinement levels:
-    amrdata.amr_levels_max = 3
+    amrdata.amr_levels_max = 1
 
     # List of refinement ratios at each level (length at least mxnest-1)
     amrdata.refinement_ratios_x = [2,2,6]
@@ -422,7 +422,7 @@ def set_multilayer(rundata):
 
     # Physics parameters
     data.num_layers = 2
-    data.eta = [0.0, -20]
+    data.eta = [0.0, -50]
     
     # Algorithm parameters
     data.eigen_method = 2
