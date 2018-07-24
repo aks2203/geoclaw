@@ -10,6 +10,7 @@ function setplot is called to set the plot parameters.
 
 from __future__ import absolute_import
 from __future__ import print_function
+from matplotlib import pyplot as plt
 
 try:
     from setplotfg import setplotfg
@@ -74,12 +75,12 @@ def setplot(plotdata=None):
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
     #plotitem.plot_var = geoplot.surface
     plotitem.plot_var = geoplot.surface_or_depth
-    plotitem.pcolor_cmap = geoplot.tsunami_colormap
+    plotitem.pcolor_cmap = plt.get_cmap("bwr")
     plotitem.pcolor_cmin = -0.9
     plotitem.pcolor_cmax = 0.9
     plotitem.add_colorbar = True
-    plotitem.amr_celledges_show = [1,1,0]
-    plotitem.amr_patchedges_show = [1]
+    plotitem.amr_celledges_show = [0,0,0]
+    plotitem.amr_patchedges_show = [0]
 
     # Land
     plotitem = plotaxes.new_plotitem(plot_type='2d_pcolor')
@@ -88,7 +89,7 @@ def setplot(plotdata=None):
     plotitem.pcolor_cmin = 0.0
     plotitem.pcolor_cmax = 100.0
     plotitem.add_colorbar = False
-    plotitem.amr_celledges_show = [1,1,0]
+    plotitem.amr_celledges_show = [0,0,0]
     plotaxes.xlimits = [-100,100]
     plotaxes.ylimits = [-100,100]
 

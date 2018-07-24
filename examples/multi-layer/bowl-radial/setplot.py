@@ -106,7 +106,7 @@ def setplot(plotdata=None):
     
     eta = [multilayer_data.eta[0],multilayer_data.eta[1]]
 
-    top_surface_limits = [eta[0]-10,eta[0]+10]
+    top_surface_limits = [eta[0]-0.9,eta[0]+0.9]
     internal_surface_limits = [eta[1]-5,eta[1]+5]
     depth_limits = [0.0, 0.4]
     top_speed_limits = [0.0,0.1]

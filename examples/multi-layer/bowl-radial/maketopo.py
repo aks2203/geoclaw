@@ -13,10 +13,10 @@ def maketopo():
     """
     nxpoints = 201
     nypoints = 201
-    xlower = -1000.e0
-    xupper = 1000.e0
-    yupper = 1000.e0
-    ylower = -1000.e0
+    xlower = -100.e0
+    xupper = 100.e0
+    yupper = 100.e0
+    ylower = -100.e0
     outfile= "bowl.topotype2"     
 
     topography = Topography(topo_func=topo)
@@ -30,10 +30,10 @@ def makeqinit():
     """
     nxpoints = 101
     nypoints = 101
-    xlower = -100.e0
-    xupper = 100.e0
-    yupper = 100.e0
-    ylower = -100.e0
+    xlower = -50.e0
+    xupper = 50.e0
+    yupper = 50.e0
+    ylower = -50.e0
     outfile= "hump.xyz"     
 
     topography = Topography(topo_func=qinit)
@@ -59,8 +59,8 @@ def qinit(x,y):
     Gaussian hump:
     """
     from numpy import where
-    ze = -((x+0e0)**2 + (y+0e0)**2)/100
-    z = where(ze>-10, 4.0*exp(ze), 0.)
+    ze = -((x+0e0)**2 + (y+0e0)**2)/10
+    z = where(ze>-10, 40.0*exp(ze), 0.)
     return z
 
 if __name__=='__main__':
